@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 Crop Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <i class="fas fa-seedling"></i> CropPredict
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link active">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="/about" class="nav-link">
+                    <i class="fas fa-info-circle"></i> About
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>🌾 Crop Price Predictor</h1>
+            <p class="hero-subtitle">
+                Predict the Modal Price of agricultural commodities across Indian markets
+                using Machine Learning.
+            </p>
+            <p class="hero-model">
+                <i class="fas fa-brain"></i> Powered by <strong>{{ model_name }}</strong>
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Prediction Form -->
+        <section class="card prediction-card">
+            <div class="card-header">
+                <h2><i class="fas fa-calculator"></i> Predict Crop Price</h2>
+                <p>Fill in the details below to get the predicted modal price (₹/Quintal)</p>
+            </div>
+            {% if not model_available %}
+            <div class="setup-notice" role="status">
+                <strong>Model not trained yet.</strong>
+                Add your market-price dataset as <code>data/Dataset.csv</code>, then run
+                <code>python train_model.py</code>. Predictions are disabled until a model is available.
+            </div>
+            {% endif %}
+            <form id="prediction-form" class="prediction-form">
+                <div class="form-grid">
+                    <!-- State -->
+                    <div class="form-group">
+                        <label for="state">
+                            <i class="fas fa-map-marker-alt"></i> State
+                        </label>
+                        <select id="state" name="state" required {% if not model_available %}disabled{% endif %}>
+                            <option value="">Select State</option>
+                            {% for item in dropdown_options['State'] %}
+                            <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- District -->
+                    <div class="form-group">
+                        <label for="district">
+                            <i class="fas fa-city"></i> District
+                        </label>
+                        <select id="district" name="district" required {% if not model_available %}disabled{% endif %}>
+                            <option value="">Select District</option>
+                            {% for item in dropdown_options['District'] %}
+                            <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Market -->
+                    <div class="form-group">
+                        <label for="market">
+                            <i class="fas fa-store"></i> Market
+                        </label>
+                        <select id="market" name="market" required {% if not model_available %}disabled{% endif %}>
+                            <option value="">Select Market</option>
+                            {% for item in dropdown_options['Market'] %}
+                            <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Commodity -->
+                    <div class="form-group">
+                        <label for="commodity">
+                            <i class="fas fa-wheat-awn"></i> Commodity
+                        </label>
+                        <select id="commodity" name="commodity" required {% if not model_available %}disabled{% endif %}>
+                            <option value="">Select Commodity</option>
+                            {% for item in dropdown_options['Commodity'] %}
+                            <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Variety -->
+                    <div class="form-group">
+                        <label for="variety">
+                            <i class="fas fa-leaf"></i> Variety
+                        </label>
+                        <select id="variety" name="variety" required {% if not model_available %}disabled{% endif %}>
+                            <option value="">Select Variety</option>
+                            {% for item in dropdown_options['Variety'] %}
+                            <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Grade -->
+                    <div class="form-group">
+                        <label for="grade">
+                            <i class="fas fa-star"></i> Grade
+                        </label>
+                        <select id="grade" name="grade" required {% if not model_available %}disabled{% endif %}>
+                            <option value="">Select Grade</option>
+                            {% for item in dropdown_options['Grade'] %}
+                            <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-predict" id="predict-btn" {% if not model_available %}disabled{% endif %}>
+                    <i class="fas fa-search-dollar"></i> Predict Price
+                </button>
+            </form>
+        </section>
+
+        <!-- Result Section -->
+        <section class="card result-card" id="result-section" style="display: none;">
+            <div class="result-content">
+                <div class="result-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <h2>Predicted Modal Price</h2>
+                <div class="price-display" id="price-display">
+                    ₹ <span id="predicted-price">0.00</span>
+                    <span class="price-unit">per Quintal</span>
+                </div>
+                <div class="result-details" id="result-details"></div>
+            </div>
+        </section>
+
+        <!-- Model Performance -->
+        <section class="card stats-card">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-bar"></i> Model Performance Comparison</h2>
+            </div>
+            <div class="table-wrapper">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>MAE (₹)</th>
+                            <th>RMSE (₹)</th>
+                            <th>R² Score</th>
+                            <th>MAPE (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                        <tr class="{% if r.Model == model_name %}best-row{% endif %}">
+                            <td>
+                                {{ r.Model }}
+                                {% if r.Model == model_name %}
+                                <span class="badge">Best</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ r.MAE }}</td>
+                            <td>{{ r.RMSE }}</td>
+                            <td>{{ r.R2 }}</td>
+                            <td>{{ r.MAPE }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>🌾 Crop Price Predictor &mdash; Machine Learning Project</p>
+            <p class="footer-sub">Built with Flask &bull; scikit-learn &bull; Random Forest</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

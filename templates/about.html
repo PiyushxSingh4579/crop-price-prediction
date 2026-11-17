@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Crop Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <i class="fas fa-seedling"></i> CropPredict
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="/about" class="nav-link active">
+                    <i class="fas fa-info-circle"></i> About
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container about-page">
+        <!-- About Hero -->
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-info-circle"></i> About This Project</h2>
+            </div>
+            <div class="about-content">
+                <p>
+                    The <strong>Crop Price Predictor</strong> is a machine learning application that
+                    predicts the <em>Modal Price (₹ per Quintal)</em> of agricultural commodities
+                    across various markets in India.
+                </p>
+
+                <h3><i class="fas fa-database"></i> Dataset</h3>
+                <p>
+                    The model is trained on agricultural commodity price data from Indian markets,
+                    containing information about State, District, Market, Commodity, Variety, Grade,
+                    and their corresponding prices.
+                </p>
+
+                <h3><i class="fas fa-cogs"></i> Methodology</h3>
+                <ul class="method-list">
+                    <li>
+                        <strong>Data Cleaning:</strong> Removed records with invalid prices (zero or negative)
+                    </li>
+                    <li>
+                        <strong>Feature Engineering:</strong> Log-transformation applied to target variable
+                        to handle price skewness
+                    </li>
+                    <li>
+                        <strong>Encoding:</strong> Target Encoding with 5-fold cross-fitting to handle
+                        high-cardinality categorical features without data leakage
+                    </li>
+                    <li>
+                        <strong>Models Evaluated:</strong> Ridge Regression, Random Forest, Gradient Boosting,
+                        XGBoost, and LightGBM
+                    </li>
+                    <li>
+                        <strong>Best Model:</strong> <span class="badge badge-lg">{{ model_name }}</span>
+                    </li>
+                </ul>
+
+                <h3><i class="fas fa-chart-line"></i> Features Used</h3>
+                <div class="feature-tags">
+                    <span class="tag"><i class="fas fa-map-marker-alt"></i> State</span>
+                    <span class="tag"><i class="fas fa-city"></i> District</span>
+                    <span class="tag"><i class="fas fa-store"></i> Market</span>
+                    <span class="tag"><i class="fas fa-wheat-awn"></i> Commodity</span>
+                    <span class="tag"><i class="fas fa-leaf"></i> Variety</span>
+                    <span class="tag"><i class="fas fa-star"></i> Grade</span>
+                </div>
+
+                <h3><i class="fas fa-trophy"></i> Model Results</h3>
+                <div class="table-wrapper">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>MAE (₹)</th>
+                                <th>RMSE (₹)</th>
+                                <th>R² Score</th>
+                                <th>MAPE (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in results %}
+                            <tr class="{% if r.Model == model_name %}best-row{% endif %}">
+                                <td>
+                                    {{ r.Model }}
+                                    {% if r.Model == model_name %}
+                                    <span class="badge">Best</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ r.MAE }}</td>
+                                <td>{{ r.RMSE }}</td>
+                                <td>{{ r.R2 }}</td>
+                                <td>{{ r.MAPE }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3><i class="fas fa-layer-group"></i> Tech Stack</h3>
+                <div class="feature-tags">
+                    <span class="tag">Python</span>
+                    <span class="tag">Flask</span>
+                    <span class="tag">scikit-learn</span>
+                    <span class="tag">Pandas</span>
+                    <span class="tag">NumPy</span>
+                    <span class="tag">HTML/CSS/JS</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>🌾 Crop Price Predictor &mdash; Machine Learning Project</p>
+            <p class="footer-sub">Built with Flask &bull; scikit-learn &bull; Random Forest</p>
+        </div>
+    </footer>
+</body>
+</html>
